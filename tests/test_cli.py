@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typer.testing import CliRunner
 
 from auto_token.__main__ import app
