@@ -57,12 +57,33 @@ def get_config(config_path: Path, config_logger: bool = True) -> Config:
             init_logger(config.log_level)
         logger.info(f"Loaded config from [bold purple]{config_path}[/].")
 
-    tokens_path = Path(config.token_path).expanduser()
+    tokens_path = Path(config.token_dir).expanduser()
     for token_path in tokens_path.iterdir():
         with open(token_path) as f:
             token = Token.model_validate(toml.load(f))
             if token in config.tokens:
-                logger.warning(f"Token {token_path.name} already exists, will overwrite it.")
+                logger.warning(f"Token {token.name} already loaded from {token_path}, which will be ignored.")
             config.tokens.add(token)
 
     return config
+
+
+def create_token(name: str) -> Token:
+    token = Token(name=name, envs=set())
+    while True:
+        env_name = typer.prompt(f"Please input env name for {name} (empty to exit)", default="", show_default=False)
+        if env_name == "":
+            break
+        env = prompt_env(env_name)
+        token.envs.add(env)
+    return token
+
+
+def get_token(name: str, config: Config, *, create: bool = False) -> Token | None:
+    for token in config.tokens:
+        if token.name == name:
+            return token
+    if create:
+        token = create_token(name)
+        return token
+    return None

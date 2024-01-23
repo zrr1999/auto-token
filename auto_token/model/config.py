@@ -9,5 +9,5 @@ from .token import Token
 
 class Config(BaseModel):
     log_level: str = "INFO"
-    token_path: Path = Path("~/.config/auto-token/tokens/")
+    token_dir: Path = Path("~/.config/auto-token/tokens/")
     tokens: set[Token] = set()

@@ -5,7 +5,17 @@
 groups = ["default", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:f6457cb9681f681d08e07a5ccd3e6c59d4d06f55a84cfd65d5e64d660330072c"
+content_hash = "sha256:ccd241ca0f26db8da334a2118d8e54f2c0046689119376ffd98888616082b27d"
+
+[[package]]
+name = "cachetools"
+version = "5.3.2"
+requires_python = ">=3.7"
+summary = "Extensible memoizing collections and decorators"
+files = [
+    {file = "cachetools-5.3.2-py3-none-any.whl", hash = "sha256:861f35a13a451f94e301ce2bec7cac63e881232ccce7ed67fab9b5df4d3beaa1"},
+    {file = "cachetools-5.3.2.tar.gz", hash = "sha256:086ee420196f7b2ab9ca2db2520aca326318b68fe5ba8bc4d49cca91add450f2"},
+]
 
 [[package]]
 name = "click"
