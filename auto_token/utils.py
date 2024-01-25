@@ -34,8 +34,8 @@ def init_logger(log_level: str):
     logger.add(handler, format="{message}", level=log_level)
 
 
-def get_config(config_path: Path, config_logger: bool = True) -> Config:
-    config_path = config_path.expanduser()
+def get_config(config_path: Path | str = "~/.config/auto-token/config.toml", config_logger: bool = True) -> Config:
+    config_path = Path(config_path).expanduser()
     if not config_path.exists():
         if config_logger:
             init_logger("INFO")
