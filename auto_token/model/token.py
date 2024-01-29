@@ -25,7 +25,10 @@ class Env(BaseModel):
 class Token(BaseModel):
     name: str
     active: bool = True
-    envs: set[Env]
+    envs: set[Env] = set()
+
+    # experimental
+    dependencies: set[str] = set()
 
     def __hash__(self) -> int:
         return hash(self.name)

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import overload
 
 import toml
 import typer
@@ -9,9 +11,55 @@ from rich import print
 from rich.columns import Columns
 from rich.table import Table
 
+from auto_token.model import Token
 from auto_token.utils import create_token, get_config, get_token, init_logger
 
 app = typer.Typer()
+
+
+@overload
+def update_token_command(func: None = None) -> Callable[[Callable], Callable[..., None]]:
+    pass
+
+
+@overload
+def update_token_command(func: Callable) -> Callable[..., None]:
+    pass
+
+
+def update_token_command(func: Callable | None = None) -> Callable[..., Callable[..., None]] | Callable[..., None]:
+    if func is None:
+        return update_token_command
+
+    def wrapper(
+        name: str,
+        config_path: Path = Path("~/.config/auto-token/config.toml"),
+        log_level: str = typer.Option(None),
+    ):
+        config_logger = log_level is None
+        if not config_logger:
+            init_logger(log_level)
+        config = get_config(config_path, config_logger=config_logger)
+        token = get_token(name, config)
+
+        if token is None:
+            logger.error(f"Token {name} not exists, please add it first.")
+            raise typer.Exit(1)
+
+        func(token)
+
+        token_path = Path(config.token_dir).expanduser() / f"{name}.toml"
+
+        if not token_path.exists():
+            logger.warning(
+                f"Token {name} exists, but token file not found, which may be created manually. Please check."
+            )
+
+        with open(token_path, mode="w") as f:
+            toml.dump(token.model_dump(mode="json"), f)
+
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 
 @app.command("list")
@@ -50,59 +98,34 @@ def add_token(
 
 
 @app.command()
+@update_token_command()
 def enable(
-    name: str, config_path: Path = Path("~/.config/auto-token/config.toml"), log_level: str = typer.Option(None)
+    token: Token,
 ):
-    config_logger = log_level is None
-    if not config_logger:
-        init_logger(log_level)
-    config = get_config(config_path, config_logger=config_logger)
-    token = get_token(name, config)
-
-    if token is None:
-        logger.error(f"Token {name} not exists, please add it first.")
-        raise typer.Exit(1)
-
     if token.active:
-        logger.warning(f"Token {name} already enabled.")
+        logger.warning(f"Token {token.name} already enabled.")
     else:
         token.active = True
 
-    token_path = Path(config.token_dir).expanduser() / f"{name}.toml"
-
-    if not token_path.exists():
-        logger.warning(f"Token {name} exists, but token file not found, which may be created manually. Please check.")
-
-    with open(token_path, mode="w") as f:
-        toml.dump(token.model_dump(mode="json"), f)
-
 
 @app.command()
+@update_token_command()
 def disable(
-    name: str, config_path: Path = Path("~/.config/auto-token/config.toml"), log_level: str = typer.Option(None)
+    token: Token,
 ):
-    config_logger = log_level is None
-    if not config_logger:
-        init_logger(log_level)
-    config = get_config(config_path, config_logger=config_logger)
-    token = get_token(name, config)
-
-    if token is None:
-        logger.error(f"Token {name} not exists, please add it first.")
-        raise typer.Exit(1)
-
     if not token.active:
-        logger.warning(f"Token {name} already disabled.")
+        logger.warning(f"Token {token.name} already disabled.")
     else:
         token.active = False
 
-    token_path = Path(config.token_dir).expanduser() / f"{name}.toml"
 
-    if not token_path.exists():
-        logger.warning(f"Token {name} exists, but token file not found, which may be created manually. Please check.")
-
-    with open(token_path, mode="w") as f:
-        toml.dump(token.model_dump(mode="json"), f)
+@app.command()
+@update_token_command()
+def rename(
+    token: Token,
+):
+    new_name = typer.prompt("Please input new name", default=token.name, show_default=False)
+    token.name = new_name
 
 
 @app.command()
