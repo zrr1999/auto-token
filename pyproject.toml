@@ -1,7 +1,7 @@
 [project]
 name = "auto-token"
 dynamic = ["version"]
-description = "auto config dns"
+description = "auto manage token"
 authors = [
     {name = "Zhan Rongrui", email = "2742392377@qq.com"},
 ]
@@ -10,6 +10,8 @@ dependencies = [
     "rich>=13.7.0",
     "typer[all]>=0.9.0",
     "cachetools>=5.3.2",
+    "toml>=0.10.2",
+    "pydantic>=2.6.1",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
