@@ -18,9 +18,7 @@ from .model import Config, Env, EnvType, Token
 def prompt_env(env_name: str, description: str | None = None) -> Env:
     value = os.environ.get(env_name, None)
     if value is not None:
-        use_env = typer.confirm(
-            f"Wheather to use {env_name} in env?",
-        )
+        use_env = typer.confirm(f"Wheather to use {env_name} in env?", default=True)
         if use_env:
             return Env(name=env_name, type=EnvType.env, value=value)
     if description is None:
@@ -41,7 +39,7 @@ def get_config(config_path: Path | str = "~/.config/auto-token/config.toml", con
         if config_logger:
             init_logger("INFO")
         create_config = typer.confirm(
-            f"Config file not found at {config_path}. Do you want to create it?",
+            f"Config file not found at {config_path}. Do you want to create it?", default=True
         )
         config = Config()
         if create_config:
