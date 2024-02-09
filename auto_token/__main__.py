@@ -11,7 +11,7 @@ from rich import print
 from rich.columns import Columns
 from rich.table import Table
 
-from auto_token.model import Token
+from auto_token.model import Env, EnvType, Token
 from auto_token.utils import create_token, get_config, get_token, init_logger
 
 app = typer.Typer()
@@ -35,10 +35,16 @@ def update_token_command(func: Callable | None = None) -> Callable[..., Callable
         name: str,
         config_path: Path = Path("~/.config/auto-token/config.toml"),
         log_level: str = typer.Option(None),
+        operate_on_base: bool = False,
     ):
         config_logger = log_level is None
         if not config_logger:
             init_logger(log_level)
+
+        if name == "base" and not operate_on_base:
+            logger.error("You can't operate on base token.")
+            raise typer.Exit(1)
+
         config = get_config(config_path, config_logger=config_logger)
         token = get_token(name, config)
 
@@ -48,7 +54,7 @@ def update_token_command(func: Callable | None = None) -> Callable[..., Callable
 
         func(token)
 
-        token_path = Path(config.token_dir).expanduser() / f"{name}.toml"
+        token_path = Path(config.token_dir).expanduser() / f"{token.name}.toml"
 
         if not token_path.exists():
             logger.warning(
@@ -60,6 +66,23 @@ def update_token_command(func: Callable | None = None) -> Callable[..., Callable
 
     wrapper.__name__ = func.__name__
     return wrapper
+
+
+@app.command()
+def init(config_path: Path = Path("~/.config/auto-token/config.toml"), log_level: str = typer.Option(None)):
+    name = "base"
+    config_logger = log_level is None
+    if not config_logger:
+        init_logger(log_level)
+    config = get_config(config_path, config_logger=config_logger)
+
+    if name in config.tokens:
+        logger.warning("Base already exists, will overwrite it. (Ctrl+C to exit)")
+
+    token_dir = Path(config.token_dir).expanduser()
+    token = Token(name=name, envs={Env(name="AUTO_TOKEN_ENV_DIR", type=EnvType.env, value=config.env_dir.as_posix())})
+    with open(token_dir / f"{name}.toml", mode="w") as f:
+        toml.dump(token.model_dump(mode="json"), f)
 
 
 @app.command("list")
@@ -137,6 +160,19 @@ def shellenv(config_path: Path = Path("~/.config/auto-token/config.toml")):
         if token.active:
             for env in token.envs:
                 print(f'export {env.name}="{env.value}"')
+
+
+@app.command()
+def dump_env(config_path: Path = Path("~/.config/auto-token/config.toml")):
+    logger.remove()
+    config = get_config(config_path, config_logger=False)
+    env_dir = config.env_dir.expanduser()
+    env_dir.expanduser().mkdir(parents=True, exist_ok=True)
+
+    for token in config.tokens:
+        with open(env_dir / f"{token.name}.env", "w") as f:
+            for env in token.envs:
+                f.write(f'{env.name}="{env.value}"\n')
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Literal, overload
 
 import toml
 import typer
@@ -60,7 +61,9 @@ def get_config(config_path: Path | str = "~/.config/auto-token/config.toml", con
     tokens_path = Path(config.token_dir).expanduser()
     for token_path in tokens_path.iterdir():
         with open(token_path) as f:
-            token = Token.model_validate(toml.load(f))
+            raw_dict = toml.load(f)
+            raw_dict["name"] = token_path.stem
+            token = Token.model_validate(raw_dict)
             if token in config.tokens:
                 logger.warning(f"Token {token.name} already loaded from {token_path}, which will be ignored.")
             config.tokens.add(token)
@@ -79,7 +82,17 @@ def create_token(name: str) -> Token:
     return token
 
 
-def get_token(name: str, config: Config, *, create: bool = False) -> Token | None:
+@overload
+def get_token(name: str, config: Config, *, create: Literal[True]) -> Token:
+    ...
+
+
+@overload
+def get_token(name: str, config: Config, *, create: Literal[False] = False) -> Token | None:
+    ...
+
+
+def get_token[T: Token | None](name: str, config: Config, *, create: bool = False):
     for token in config.tokens:
         if token.name == name:
             return token
