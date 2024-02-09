@@ -80,7 +80,9 @@ def init(config_path: Path = Path("~/.config/auto-token/config.toml"), log_level
         logger.warning("Base already exists, will overwrite it. (Ctrl+C to exit)")
 
     token_dir = Path(config.token_dir).expanduser()
-    token = Token(name=name, envs={Env(name="AUTO_TOKEN_ENV_DIR", type=EnvType.env, value=config.env_dir.as_posix())})
+    token = Token(
+        name=name, envs={Env(name="AUTO_TOKEN_ENV_DIR", type=EnvType.env, value=config.env_dir.expanduser().as_posix())}
+    )
     with open(token_dir / f"{name}.toml", mode="w") as f:
         toml.dump(token.model_dump(mode="json"), f)
 
@@ -163,7 +165,7 @@ def shellenv(config_path: Path = Path("~/.config/auto-token/config.toml")):
 
 
 @app.command()
-def dump_env(config_path: Path = Path("~/.config/auto-token/config.toml")):
+def dumpenv(config_path: Path = Path("~/.config/auto-token/config.toml")):
     logger.remove()
     config = get_config(config_path, config_logger=False)
     env_dir = config.env_dir.expanduser()
@@ -172,7 +174,7 @@ def dump_env(config_path: Path = Path("~/.config/auto-token/config.toml")):
     for token in config.tokens:
         with open(env_dir / f"{token.name}.env", "w") as f:
             for env in token.envs:
-                f.write(f'{env.name}="{env.value}"\n')
+                f.write(f"{env.name}={env.value}\n")
 
 
 if __name__ == "__main__":

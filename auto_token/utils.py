@@ -59,6 +59,7 @@ def get_config(config_path: Path | str = "~/.config/auto-token/config.toml", con
         logger.info(f"Loaded config from [bold purple]{config_path}[/].")
 
     tokens_path = Path(config.token_dir).expanduser()
+    tokens_path.mkdir(parents=True, exist_ok=True)
     for token_path in tokens_path.iterdir():
         with open(token_path) as f:
             raw_dict = toml.load(f)
