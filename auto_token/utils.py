@@ -15,10 +15,11 @@ from rich.style import Style
 from .model import Config, Env, EnvType, Token
 
 
-def prompt_env(env_name: str, description: str | None = None) -> Env:
+def prompt_env(env_name: str, description: str | None = None, use_env: bool | None = None) -> Env:
     value = os.environ.get(env_name, None)
     if value is not None:
-        use_env = typer.confirm(f"Wheather to use {env_name} in env?", default=True)
+        if use_env is None:
+            use_env = typer.confirm(f"Wheather to use {env_name} in env?", default=True)
         if use_env:
             return Env(name=env_name, type=EnvType.env, value=value)
     if description is None:
@@ -81,6 +82,14 @@ def create_token(name: str) -> Token:
     return token
 
 
+def create_token_by_env(name: str, env_names: list[str]) -> Token:
+    envs: set[Env] = set()
+    for env_name in env_names:
+        env = prompt_env(env_name, use_env=True)
+        envs.add(env)
+    return Token(name=name, envs=envs)
+
+
 @overload
 def get_token(name: str, config: Config, *, create: Literal[True]) -> Token:
     ...
@@ -91,11 +100,13 @@ def get_token(name: str, config: Config, *, create: Literal[False] = False) -> T
     ...
 
 
-def get_token[T: Token | None](name: str, config: Config, *, create: bool = False):
+def get_token(name: str, config: Config, *, create: bool = False, env_names: list[str] | None = None):
+    if env_names is None:
+        env_names = []
     for token in config.tokens:
         if token.name == name:
             return token
     if create:
-        token = create_token(name)
+        token = create_token(name) if env_names is None else create_token_by_env(name, env_names)
         return token
     return None
