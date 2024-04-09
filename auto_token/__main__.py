@@ -77,7 +77,7 @@ def init(config_path: Path = Path("~/.config/auto-token/config.toml"), log_level
     config = get_config(config_path, config_logger=config_logger)
 
     if name in config.tokens:
-        logger.warning("Base already exists, will overwrite it. (Ctrl+C to exit)")
+        logger.warning(f"{name} already exists, will overwrite it. (Ctrl+C to exit)")
 
     token_dir = Path(config.token_dir).expanduser()
     token = Token(

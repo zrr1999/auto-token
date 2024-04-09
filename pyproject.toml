@@ -31,8 +31,9 @@ write_template = "__version__ = '{}'"
 
 [tool.pdm.dev-dependencies]
 test = [
+    "xdoctest",
     "pytest",
-    "pytest-mock",
+    "pytest-cov",
     "coverage",
 ]
 

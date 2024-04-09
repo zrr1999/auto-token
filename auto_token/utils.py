@@ -39,17 +39,11 @@ def get_config(config_path: Path | str = "~/.config/auto-token/config.toml", con
     if not config_path.exists():
         if config_logger:
             init_logger("INFO")
-        create_config = typer.confirm(
-            f"Config file not found at {config_path}. Do you want to create it?", default=True
-        )
         config = Config()
-        if create_config:
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(config_path, mode="w") as f:
-                toml.dump(config.model_dump(mode="json"), f)
-            logger.info(f"Use default config and create config file at [bold purple]{config_path}[/].")
-        else:
-            logger.info("No config file found, use default config.")
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, mode="w") as f:
+            toml.dump(config.model_dump(mode="json"), f)
+        logger.info(f"Use default config and create config file at [bold purple]{config_path}[/].")
     else:
         with open(config_path) as f:
             config = Config.model_validate(toml.load(f))
