@@ -85,18 +85,18 @@ def create_token_by_env(name: str, env_names: list[str]) -> Token:
 
 
 @overload
-def get_token(name: str, config: Config, *, create: Literal[True]) -> Token:
+def get_token(name: str, config: Config, *, create: Literal[True], env_names: list[str] | None = None) -> Token:
     ...
 
 
 @overload
-def get_token(name: str, config: Config, *, create: Literal[False] = False) -> Token | None:
+def get_token(
+    name: str, config: Config, *, create: Literal[False] = False, env_names: list[str] | None = None
+) -> Token | None:
     ...
 
 
 def get_token(name: str, config: Config, *, create: bool = False, env_names: list[str] | None = None):
-    if env_names is None:
-        env_names = []
     for token in config.tokens:
         if token.name == name:
             return token
