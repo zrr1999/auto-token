@@ -161,7 +161,7 @@ def shellenv(config_path: Path = Path("~/.config/auto-token/config.toml")):
     for token in config.tokens:
         if token.active:
             for env in token.envs:
-                print(f"export {env.name}={env.value}")
+                print(f"export '{env.name}={env.value}'")
 
 
 @app.command()
