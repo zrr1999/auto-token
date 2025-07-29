@@ -24,7 +24,7 @@ jobs:
       id-token: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Setup PDM 📦
       uses: pdm-project/setup-pdm@v3
       with:
@@ -32,7 +32,7 @@ jobs:
     - name: Build package 👷‍♂️
       run: pdm build -v --no-sdist
     - name: Upload wheels 👷‍♂️
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheels
         path: dist
@@ -45,9 +45,9 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download wheels 👷‍♂️
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels
           path: dist
