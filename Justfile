@@ -6,5 +6,5 @@ ruff:
     uv run ruff check . --fix --unsafe-fixes
 
 test:
-    uv run pytest --cov=dns_manager --codspeed --xdoc
+    uv run pytest --cov=auto_token --codspeed --xdoc
     uv run coverage xml
