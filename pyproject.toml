@@ -34,10 +34,12 @@ includes = ["auto_token"]
 
 [tool.uv]
 dev-dependencies = [
+    "pyright",
+    "ruff",
     "xdoctest",
     "pytest",
     "pytest-cov",
-    "coverage",
+    "pytest-codspeed",
 ]
 
 [tool.ruff]
