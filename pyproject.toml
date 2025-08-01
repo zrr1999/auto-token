@@ -29,16 +29,16 @@ source = "scm"
 write_to = "auto_token/__version__.py"
 write_template = "__version__ = '{}'"
 
-[tool.pdm.dev-dependencies]
-test = [
+[tool.pdm.build]
+includes = ["auto_token"]
+
+[tool.uv]
+dev-dependencies = [
     "xdoctest",
     "pytest",
     "pytest-cov",
     "coverage",
 ]
-
-[tool.pdm.build]
-includes = ["auto_token"]
 
 [tool.ruff]
 line-length = 120
